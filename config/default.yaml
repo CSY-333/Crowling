@@ -1,0 +1,50 @@
+snapshot:
+  timezone: "Asia/Seoul"
+  reference_time: "start" # start | manual
+  manual_snapshot_time: null
+
+search:
+  keywords: ["기후변화", "인공지능"]
+  max_articles_per_keyword: 300
+  date_range:
+    start: "2025-01-01"
+    end: "2025-12-23"
+  sort: "rel"
+  use_openapi: true
+
+volume_strategy:
+  target_comments: 50000
+  min_acceptable_comments: 30000
+  max_total_articles: 2000
+  estimator: "trimmed_mean_p20_p80"
+
+collection:
+  rate_limit:
+    baseline_min_delay: 1.0
+    min_delay: 1.0
+    max_delay: 3.0
+    max_concurrent: 1
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+  timeout:
+    connect: 10
+    read: 30
+  auto_throttle:
+    window: 50
+    ratio_429_threshold: 0.05
+    min_delay_step_up: 0.5
+    recovery_window: 200
+    ratio_429_recovery_threshold: 0.01
+    min_delay_step_down: 0.2
+    stop_on_403: true
+
+storage:
+  db_path: "./data/nact_data.db"
+  wal_mode: true
+
+privacy:
+  allow_pii: false
+  hash_algorithm: "sha256"
+  hash_salt_mode: "per_run" # per_run | global
+  global_salt: null # required if global

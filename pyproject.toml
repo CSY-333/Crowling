@@ -1,0 +1,26 @@
+[project]
+name = "nact-mvp"
+version = "0.1.0"
+description = "Naver Article & Comment Tracker — Research Dataset Snapshot Generator"
+requires-python = ">=3.9"
+dependencies = [
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+    "tenacity>=8.2.0",
+    "pytest>=7.3.0",
+    "pytest-mock>=3.10.0",
+]
+
+[project.scripts]
+nact = "src.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

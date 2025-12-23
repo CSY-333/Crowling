@@ -200,7 +200,7 @@ A run is considered **Done** when all of the following are true:
 
   * [ ] request signing with client_id/client_secret
   * [ ] pagination up to `max_articles_per_keyword`
-  * [ ] parse response items into `ArticleSearchResult`
+  * [ ] normalize OpenAPI + HTML fallback items into `ArticleSearchResult` (url/oid/aid/title/published_at/description/matched_keywords)
   * [ ] record `search_rank` (1-indexed within keyword)
 
 ### 6.2 Fallback HTML search (secondary)
@@ -217,8 +217,8 @@ A run is considered **Done** when all of the following are true:
 
   * [ ] `extract_oid_aid(url)`
   * [ ] `normalize_url(url)`
-  * [ ] dedup key priority: (oid,aid) else normalized url
-  * [ ] `matched_keywords` accumulation
+  * [ ] in-collector dedup suppression using key priority: (oid,aid) else normalized url
+  * [ ] `matched_keywords` accumulation (list per unique article)
 
 ---
 
@@ -253,8 +253,8 @@ A run is considered **Done** when all of the following are true:
 * [ ] Implement `src/ops/probe.py` (or inside comment collector):
 
   * [ ] Auto-discovery from article HTML (ticket/templateId/pool/cv/template)
-  * [ ] Fallback Config A
-  * [ ] Fallback Config B
+  * [ ] `get_candidate_configs()` helper to return [auto, Config A, Config B]
+  * [ ] Ensure callers iterate Config A/B when discovery fails
 
 ### 8.2 Deep schema validation
 
