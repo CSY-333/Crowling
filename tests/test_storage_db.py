@@ -58,10 +58,10 @@ def test_get_completed_article_keys_filters_by_run(tmp_path):
             )
             conn.execute(
                 """
-                INSERT INTO articles (oid, aid, run_id, status_code, crawl_at)
+                INSERT INTO articles (run_id, oid, aid, status, crawl_at)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                ("001", "0001", "run-1", "SUCCESS", datetime.utcnow().isoformat()),
+                ("run-1", "001", "0001", "SUCCESS", datetime.utcnow().isoformat()),
             )
     finally:
         conn.close()

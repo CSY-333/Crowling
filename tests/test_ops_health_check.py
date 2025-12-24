@@ -84,9 +84,9 @@ def _health_check_with_stubs(mock_config, validations, payloads, should_raise=Fa
     )
     parser = StubParser(
         [
-            {"status_code": "CRAWL-OK", "_raw_html": "<html></html>"},
-            {"status_code": "CRAWL-OK", "_raw_html": "<html></html>"},
-            {"status_code": "CRAWL-OK", "_raw_html": "<html></html>"},
+            {"status": "CRAWL-OK", "_raw_html": "<html></html>"},
+            {"status": "CRAWL-OK", "_raw_html": "<html></html>"},
+            {"status": "CRAWL-OK", "_raw_html": "<html></html>"},
         ]
     )
     probe = StubProbe(

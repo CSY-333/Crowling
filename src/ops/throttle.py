@@ -1,9 +1,12 @@
 import logging
 from collections import deque
 from datetime import datetime
+from typing import Optional
+
 from ..config import AutoThrottleConfig
 from ..storage.db import Database
 from .rate_limiter import RateLimiter
+from .run_events import RunEventLogger
 
 logger = logging.getLogger(__name__)
 
@@ -12,11 +15,19 @@ class AutoThrottler:
     Monitors response status codes and adjusts RateLimiter delays.
     Implements 429 backoff and 403 emergency stop.
     """
-    def __init__(self, config: AutoThrottleConfig, limiter: RateLimiter, db: Database, run_id: str):
+    def __init__(
+        self,
+        config: AutoThrottleConfig,
+        limiter: RateLimiter,
+        db: Database,
+        run_id: str,
+        event_logger: Optional[RunEventLogger] = None,
+    ):
         self.config = config
         self.limiter = limiter
         self.db = db
         self.run_id = run_id
+        self.event_logger = event_logger
         
         # Sliding window for 429 detection (True if 429, False otherwise)
         self.history = deque(maxlen=config.window)
@@ -88,12 +99,16 @@ class AutoThrottler:
         self._log_event("STOP_LIMIT", reason)
         
     def _log_event(self, event_type: str, details: str):
+        if self.event_logger:
+            self.event_logger.log(event_type, details)
+            return
+
         try:
             conn = self.db.get_connection()
             with conn:
                 conn.execute(
                     "INSERT INTO events (run_id, timestamp, event_type, details) VALUES (?, ?, ?, ?)",
-                    (self.run_id, datetime.now().isoformat(), event_type, details)
+                    (self.run_id, datetime.now().isoformat(), event_type, details),
                 )
             conn.close()
         except Exception as e:

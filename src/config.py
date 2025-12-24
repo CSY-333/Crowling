@@ -2,7 +2,7 @@ import yaml
 from copy import deepcopy
 from pathlib import Path
 from typing import List, Optional, Literal, Dict, Any
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, root_validator
 
 class SnapshotConfig(BaseModel):
     timezone: str = "Asia/Seoul"
@@ -51,11 +51,17 @@ class AutoThrottleConfig(BaseModel):
     min_delay_step_down: float = 0.2
     stop_on_403: bool = True
 
+class CommentStatsConfig(BaseModel):
+    enabled: bool = True
+    min_comments: int = 100
+    stats_endpoint: str = "https://apis.naver.com/commentBox/cbox/web_naver_statistics_jsonp.json"
+
 class CollectionConfig(BaseModel):
     rate_limit: RateLimitConfig
     retry: RetryConfig
     timeout: TimeoutConfig
     auto_throttle: AutoThrottleConfig
+    comment_stats: CommentStatsConfig = CommentStatsConfig()
 
 class StorageConfig(BaseModel):
     db_path: str = "./data/nact_data.db"
@@ -64,8 +70,26 @@ class StorageConfig(BaseModel):
 class PrivacyConfig(BaseModel):
     allow_pii: bool = False
     hash_algorithm: str = "sha256"
-    hash_salt_mode: Literal["per_run", "global"] = "per_run"
-    global_salt: Optional[str] = None
+    mode: Literal["ephemeral", "longitudinal"] = "ephemeral"
+    fixed_salt: Optional[str] = None
+
+    @root_validator(pre=True)
+    def _migrate_legacy_fields(cls, values):
+        hash_salt_mode = values.pop("hash_salt_mode", None)
+        if "mode" not in values and hash_salt_mode:
+            values["mode"] = "longitudinal" if hash_salt_mode == "global" else "ephemeral"
+
+        global_salt = values.pop("global_salt", None)
+        if "fixed_salt" not in values and global_salt:
+            values["fixed_salt"] = global_salt
+        return values
+
+    @root_validator
+    def _validate_longitudinal_mode(cls, values):
+        mode = values.get("mode", "ephemeral")
+        if mode == "longitudinal" and not values.get("fixed_salt"):
+            raise ValueError("privacy.fixed_salt is required when privacy.mode='longitudinal'.")
+        return values
 
 class AppConfig(BaseModel):
     snapshot: SnapshotConfig
@@ -112,10 +136,6 @@ def load_config(config_path: str) -> AppConfig:
 
     try:
         config = AppConfig(**merged_config)
-
-        if config.privacy.hash_salt_mode == "global" and not config.privacy.global_salt:
-            raise ValueError("Privacy config error: 'global_salt' is required when 'hash_salt_mode' is 'global'.")
-
         return config
     except ValidationError as e:
         raise ValueError(f"Configuration validation failed: {e}")

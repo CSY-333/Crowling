@@ -45,7 +45,8 @@ def test_fetch_and_parse_prefers_json_ld():
 
     result = parser.fetch_and_parse("https://news.example.com/article")
 
-    assert result["status_code"] == "CRAWL-OK"
+    assert result["status"] == "CRAWL-OK"
+    assert result["status_code"] == 200
     assert result["title"] == "JSON Headline"
     assert result["published_at"] == "2025-01-01T00:00:00+09:00"
     assert result["reporter"] == "Reporter A"
@@ -60,5 +61,6 @@ def test_fetch_and_parse_handles_http_errors():
 
     result = parser.fetch_and_parse("https://news.example.com/article")
 
-    assert result["status_code"] == "FAIL-HTTP"
+    assert result["status"] == "FAIL-HTTP"
+    assert result["status_code"] == 500
     assert result["error_code"] == "500"

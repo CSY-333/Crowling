@@ -70,7 +70,7 @@ class HealthCheck:
             logger.info("Health Check Sample %s: %s/%s", tried, oid, aid)
 
             metadata = self.parser.fetch_and_parse(url)
-            if metadata.get("status_code") != "CRAWL-OK":
+            if metadata.get("status") != "CRAWL-OK":
                 logger.error("Sample %s Failed: Metadata parse error", tried)
                 continue
 

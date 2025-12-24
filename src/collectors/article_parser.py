@@ -45,21 +45,23 @@ class ArticleParser:
         """
         result = {
             "title": None,
-            "published_at": None, 
+            "published_at": None,
             "updated_at": None,
             "press": None,
             "reporter": None,
             "section": None,
             "body": None,
             "body_length": 0,
-            "status_code": "FAIL-PARSE"
+            "status": "FAIL-PARSE",
+            "status_code": None,
         }
         
         try:
             # Add Referer to allow some deep linking
             resp = self.http_client.request("GET", url, headers=self.headers, timeout=10)
+            result["status_code"] = resp.status_code
             if resp.status_code != 200:
-                result["status_code"] = "FAIL-HTTP"
+                result["status"] = "FAIL-HTTP"
                 result["error_code"] = str(resp.status_code)
                 return result
                 
@@ -134,7 +136,7 @@ class ArticleParser:
                 result['body'] = body_div.get_text(separator='\n', strip=True)
                 result['body_length'] = len(result['body'])
 
-            result["status_code"] = "CRAWL-OK"
+            result["status"] = "CRAWL-OK"
             return result
             
         except Exception as e:

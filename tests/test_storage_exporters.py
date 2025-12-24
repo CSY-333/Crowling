@@ -17,12 +17,21 @@ def test_data_exporter_writes_csv(tmp_path):
                 ("run-1", "2023-01-01T00:00:00", "2023-01-01T00:00:00", "UTC"),
             )
             conn.execute(
-                "INSERT INTO articles (oid, aid, run_id, status_code) VALUES (?, ?, ?, ?)",
-                ("001", "0001", "run-1", "SUCCESS"),
+                "INSERT INTO articles (run_id, oid, aid, status) VALUES (?, ?, ?, ?)",
+                ("run-1", "001", "0001", "SUCCESS"),
             )
             conn.execute(
-                "INSERT INTO comments (comment_no, run_id, oid, aid, contents) VALUES (?, ?, ?, ?, ?)",
-                ("c1", "run-1", "001", "0001", "hello"),
+                "INSERT INTO comments (run_id, comment_no, oid, aid, contents) VALUES (?, ?, ?, ?, ?)",
+                ("run-1", "c1", "001", "0001", "hello"),
+            )
+            conn.execute(
+                """
+                INSERT INTO comment_stats (
+                    run_id, oid, aid, total_comments, male_ratio, female_ratio,
+                    age_10s, age_20s, age_30s, age_40s, age_50s, age_60s, age_70s
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                ("run-1", "001", "0001", 240, 82.0, 18.0, 0.0, 2.0, 19.0, 44.0, 29.0, 6.0, 0.0),
             )
     finally:
         conn.close()
@@ -33,12 +42,13 @@ def test_data_exporter_writes_csv(tmp_path):
     articles_csv = tmp_path / "exports" / "articles.csv"
     comments_csv = tmp_path / "exports" / "comments.csv"
     runs_csv = tmp_path / "exports" / "run_log.csv"
+    stats_csv = tmp_path / "exports" / "comment_stats.csv"
 
-    for csv_path in (articles_csv, comments_csv):
+    for csv_path in (articles_csv, comments_csv, stats_csv):
         assert csv_path.exists()
         with csv_path.open("r", encoding="utf-8-sig") as handle:
             rows = list(csv.reader(handle))
-            assert rows[1][0] in {"001", "c1"}
+            assert rows[1][0] == "run-1"
 
     # run_log should include all runs (no filtering)
     with runs_csv.open("r", encoding="utf-8-sig") as handle:

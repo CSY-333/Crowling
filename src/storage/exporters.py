@@ -19,24 +19,31 @@ class DataExporter:
         
         self._export_table(
             table="articles",
-            filename=f"articles_{run_id}.csv",
+            filename="articles.csv",
             where_clause="WHERE run_id = ?",
-            params=(run_id,)
+            params=(run_id,),
         )
-        
+
         self._export_table(
             table="comments",
-            filename=f"comments_{run_id}.csv",
+            filename="comments.csv",
             where_clause="WHERE run_id = ?",
-            params=(run_id,)
+            params=(run_id,),
         )
-        
-        # Export run log (append mode usually, but here we dump current run info)
+
+        self._export_table(
+            table="comment_stats",
+            filename="comment_stats.csv",
+            where_clause="WHERE run_id = ?",
+            params=(run_id,),
+        )
+
+        # run log maintains every run (no filter)
         self._export_table(
             table="runs",
-            filename=f"run_log_{run_id}.csv",
-            where_clause="WHERE run_id = ?",
-            params=(run_id,)
+            filename="run_log.csv",
+            where_clause="",
+            params=(),
         )
 
     def _export_table(self, table: str, filename: str, where_clause: str = "", params: tuple = ()):

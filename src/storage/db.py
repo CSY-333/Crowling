@@ -43,26 +43,31 @@ class Database:
                         timezone TEXT NOT NULL,
                         config_json TEXT,
                         status TEXT CHECK(status IN ('SUCCESS', 'PARTIAL', 'STOPPED', 'FAILED')),
-                        notes TEXT
+                        notes TEXT,
+                        total_articles INTEGER DEFAULT 0,
+                        total_comments INTEGER DEFAULT 0,
+                        health_score INTEGER,
+                        health_flags TEXT
                     );
                 """)
 
                 # 2. Articles Table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS articles (
+                        run_id TEXT NOT NULL,
                         oid TEXT NOT NULL,
                         aid TEXT NOT NULL,
-                        run_id TEXT NOT NULL,
                         url TEXT,
                         title TEXT,
                         press TEXT,
                         published_at TEXT,
                         updated_at TEXT,
                         crawl_at TEXT,
-                        status_code TEXT,
+                        status TEXT NOT NULL DEFAULT 'PENDING',
+                        status_code INTEGER,
                         error_code TEXT,
                         error_message TEXT,
-                        PRIMARY KEY (oid, aid),
+                        PRIMARY KEY (run_id, oid, aid),
                         FOREIGN KEY (run_id) REFERENCES runs(run_id)
                     );
                 """)
@@ -70,8 +75,8 @@ class Database:
                 # 3. Comments Table
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS comments (
-                        comment_no TEXT PRIMARY KEY,
                         run_id TEXT NOT NULL,
+                        comment_no TEXT NOT NULL,
                         oid TEXT NOT NULL,
                         aid TEXT NOT NULL,
                         parent_comment_no TEXT,
@@ -87,11 +92,11 @@ class Database:
                         reply_count INTEGER,
                         is_deleted BOOLEAN,
                         is_blind BOOLEAN,
-                        status_code TEXT,
+                        status_code INTEGER,
                         error_code TEXT,
                         error_message TEXT,
-                        FOREIGN KEY (run_id) REFERENCES runs(run_id),
-                        FOREIGN KEY (oid, aid) REFERENCES articles(oid, aid)
+                        PRIMARY KEY (run_id, comment_no),
+                        FOREIGN KEY (run_id, oid, aid) REFERENCES articles(run_id, oid, aid)
                     );
                 """)
 
@@ -104,6 +109,29 @@ class Database:
                         event_type TEXT,
                         details TEXT,
                         FOREIGN KEY (run_id) REFERENCES runs(run_id)
+                    );
+                """)
+
+                # 5. Comment Stats Table
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS comment_stats (
+                        run_id TEXT NOT NULL,
+                        oid TEXT NOT NULL,
+                        aid TEXT NOT NULL,
+                        total_comments INTEGER,
+                        male_ratio REAL,
+                        female_ratio REAL,
+                        age_10s REAL,
+                        age_20s REAL,
+                        age_30s REAL,
+                        age_40s REAL,
+                        age_50s REAL,
+                        age_60s REAL,
+                        age_70s REAL,
+                        snapshot_at TEXT,
+                        collected_at TEXT,
+                        PRIMARY KEY (run_id, oid, aid),
+                        FOREIGN KEY (run_id, oid, aid) REFERENCES articles(run_id, oid, aid)
                     );
                 """)
                 
@@ -137,7 +165,7 @@ class Database:
         """
         conn = self.get_connection()
         try:
-            query = "SELECT oid, aid FROM articles WHERE status_code = 'SUCCESS'"
+            query = "SELECT oid, aid FROM articles WHERE status = 'SUCCESS'"
             params = []
             if run_id:
                 query += " AND run_id = ?"

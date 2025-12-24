@@ -76,6 +76,24 @@ class CommentParser:
         page_model = payload.get("result", {}).get("pageModel", {})
         return page_model.get("next")
 
+    def extract_total_count(self, payload: Dict[str, Any]) -> int:
+        result = payload.get("result", {}) or {}
+        count_block = result.get("count") or {}
+        candidates = [
+            result.get("commentCount"),
+            result.get("realCommentCount"),
+            count_block.get("comment"),
+            count_block.get("total"),
+        ]
+        for value in candidates:
+            if value is None:
+                continue
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                continue
+        return 0
+
     def to_record(self, comment: Dict[str, Any], depth: int, parent: Optional[str], snapshot_at: str) -> Dict[str, Any]:
         # Returns a dict suitable for DB insertion (CommentRecord equivalent)
         comment_no = str(comment.get("commentNo"))

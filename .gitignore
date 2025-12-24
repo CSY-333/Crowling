@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+*.log
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+coverage/
+
+# Project Specific
+nact_data.db*
+nact_data.*.db
+legacy/
+.gemini/

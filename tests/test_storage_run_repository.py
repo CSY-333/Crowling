@@ -15,7 +15,7 @@ def test_run_repository_start_and_finalize(tmp_path):
     repo.start_run(
         run_id="run-1",
         snapshot_at="2025-01-01T00:00:00",
-        timezone="UTC",
+        tz_name="UTC",
         config_payload=config_payload,
     )
 

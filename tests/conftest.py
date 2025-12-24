@@ -2,7 +2,21 @@ import pytest
 import sqlite3
 import os
 from pathlib import Path
-from src.config import AppConfig, SnapshotConfig, SearchConfig, DateRangeConfig, VolumeStrategyConfig, CollectionConfig, StorageConfig, PrivacyConfig, RateLimitConfig, AutoThrottleConfig, RetryConfig, TimeoutConfig
+from src.config import (
+    AppConfig,
+    SnapshotConfig,
+    SearchConfig,
+    DateRangeConfig,
+    VolumeStrategyConfig,
+    CollectionConfig,
+    StorageConfig,
+    PrivacyConfig,
+    RateLimitConfig,
+    AutoThrottleConfig,
+    RetryConfig,
+    TimeoutConfig,
+    CommentStatsConfig,
+)
 from src.storage.db import Database
 from src.ops.evidence import EvidenceCollector
 
@@ -20,7 +34,8 @@ def mock_config(tmp_path):
             rate_limit=RateLimitConfig(min_delay=0.0, max_delay=0.0, baseline_min_delay=0.0), # Fast tests
             retry=RetryConfig(),
             timeout=TimeoutConfig(),
-            auto_throttle=AutoThrottleConfig(window=5, ratio_429_threshold=0.2) # Small window for testing
+            auto_throttle=AutoThrottleConfig(window=5, ratio_429_threshold=0.2), # Small window for testing
+            comment_stats=CommentStatsConfig(),
         ),
         storage=StorageConfig(db_path=str(tmp_path / "test.db"), wal_mode=False),
         privacy=PrivacyConfig()

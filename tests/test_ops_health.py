@@ -32,8 +32,8 @@ class TestHealthCheck:
         
         # 1. Metadata OK
         mock_deps["parser"].fetch_and_parse.return_value = {
-            "status_code": "CRAWL-OK", 
-            "_raw_html": "<html></html>"
+            "status": "CRAWL-OK",
+            "_raw_html": "<html></html>",
         }
         
         # 2. Probe Param
@@ -64,7 +64,7 @@ class TestHealthCheck:
             {"oid": "001", "aid": "0000001", "url": "http://Article1"}
         ]
         # Metadata Fail
-        mock_deps["parser"].fetch_and_parse.return_value = {"status_code": "FAIL-HTTP"}
+        mock_deps["parser"].fetch_and_parse.return_value = {"status": "FAIL-HTTP"}
         
         hc = HealthCheck(
             config=mock_deps["config"],
@@ -87,7 +87,7 @@ class TestHealthCheck:
             {"oid": "3", "aid": "3", "url": "u3"},
         ]
         
-        mock_deps["parser"].fetch_and_parse.return_value = {"status_code": "CRAWL-OK"}
+        mock_deps["parser"].fetch_and_parse.return_value = {"status": "CRAWL-OK"}
         mock_deps["probe"].get_candidate_configs.return_value = [{"t": "n"}]
         mock_deps["comment_fetcher"].fetch_page.return_value = "{}"
         
